@@ -36,15 +36,44 @@ router.post("/", async (req, res) => {
       product_id,
       tag_id: tag.id,
     }));
-    const productTags = await ProductTag.bulkCreate(productTagsData);
-    res.status(200).json(productTags);
+    const newlyCreatedProductTags = await ProductTag.bulkCreate(
+      productTagsData
+    );
+    res.status(200).json({ newlyCreatedProductTags });
   } catch (err) {
     res.status(500).send(err);
   }
 });
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
   // update a tag's name by its `id` value
+  try {
+    await Tag.update(req.body, {
+      where: { id: req.params.id },
+    });
+    const productTags = await ProductTag.findAll({
+      where: { tag_id: req.params.id },
+    });
+    const productIds = productTags.map(({ product_id }) => product_id);
+    const newProductTags = req.body.productIds
+      .filter(product_id => !productIds.includes(product_id))
+      .map(product_id => ({
+        product_id,
+        tag_id: req.params.id,
+      }));
+    const productTagIdsToRemove = productTags
+      .filter(({ product_id }) => !req.body.productIds.includes(product_id))
+      .map(({ id }) => id);
+    const numberOfDestroyedProductTags = await ProductTag.destroy({
+      where: { id: productTagIdsToRemove },
+    });
+    const newlyCreatedProductTags = await ProductTag.bulkCreate(newProductTags);
+    res
+      .status(200)
+      .json({ numberOfDestroyedProductTags, newlyCreatedProductTags });
+  } catch (err) {
+    res.status(500).send(err);
+  }
 });
 
 router.delete("/:id", (req, res) => {
