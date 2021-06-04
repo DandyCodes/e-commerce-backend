@@ -25,8 +25,22 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   // create a new tag
+  try {
+    const tag = await Tag.create(req.body);
+    if (!req.body.productIds.length) {
+      return res.status(200).json(tag);
+    }
+    const productTagsData = req.body.productIds.map(product_id => ({
+      product_id,
+      tag_id: tag.id,
+    }));
+    const productTags = await ProductTag.bulkCreate(productTagsData);
+    res.status(200).json(productTags);
+  } catch (err) {
+    res.status(500).send(err);
+  }
 });
 
 router.put("/:id", (req, res) => {
