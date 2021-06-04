@@ -54,9 +54,9 @@ router.put("/:id", async (req, res) => {
     const productTags = await ProductTag.findAll({
       where: { tag_id: req.params.id },
     });
-    const productIds = productTags.map(({ product_id }) => product_id);
+    const taggedProductIds = productTags.map(({ product_id }) => product_id);
     const newProductTags = req.body.productIds
-      .filter(product_id => !productIds.includes(product_id))
+      .filter(product_id => !taggedProductIds.includes(product_id))
       .map(product_id => ({
         product_id,
         tag_id: req.params.id,
