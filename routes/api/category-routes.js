@@ -37,8 +37,13 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
   // update a category by its `id` value
+  const numberOfAffectedRows = await Category.update(req.body, {
+    where: { id: req.params.id },
+  });
+  console.log(numberOfAffectedRows);
+  res.status(200).json({ numberOfAffectedRows });
 });
 
 router.delete("/:id", (req, res) => {
