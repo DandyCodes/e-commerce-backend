@@ -51,17 +51,19 @@ router.put("/:id", async (req, res) => {
     await Tag.update(req.body, {
       where: { id: req.params.id },
     });
-    const productTags = await ProductTag.findAll({
+    const relatedProductTags = await ProductTag.findAll({
       where: { tag_id: req.params.id },
     });
-    const taggedProductIds = productTags.map(({ product_id }) => product_id);
+    const relatedProductTagProductIds = relatedProductTags.map(
+      ({ product_id }) => product_id
+    );
     const newProductTags = req.body.productIds
-      .filter(product_id => !taggedProductIds.includes(product_id))
+      .filter(product_id => !relatedProductTagProductIds.includes(product_id))
       .map(product_id => ({
         product_id,
         tag_id: req.params.id,
       }));
-    const productTagIdsToRemove = productTags
+    const productTagIdsToRemove = relatedProductTags
       .filter(({ product_id }) => !req.body.productIds.includes(product_id))
       .map(({ id }) => id);
     const numberOfDestroyedProductTags = await ProductTag.destroy({
@@ -76,8 +78,16 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
   // delete on tag by its `id` value
+  try {
+    const numberOfDestroyedTags = await Tag.destroy({
+      where: { id: req.params.id },
+    });
+    res.status(200).json({ numberOfDestroyedTags });
+  } catch (err) {
+    res.status(500).send(err);
+  }
 });
 
 module.exports = router;
