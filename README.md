@@ -4,7 +4,7 @@
 
 ## Description:
 
-An express server using sequelize to interact with a MySQL database in response to HTTP GET, POST, PUT and DELETE requests.
+An e-commerce backend with models representing products, categories and tags which leverages an express server using sequelize to interact with a MySQL database in response to HTTP requests which modify persistent data through ORM.
 
 ## Table of Contents:
 
